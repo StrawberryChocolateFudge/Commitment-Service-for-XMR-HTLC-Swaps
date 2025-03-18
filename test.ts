@@ -1,5 +1,6 @@
 #!/usr/bin/env -S deno run
 import {Buffer} from "node:buffer"
+import assert from "node:assert"
 
 function decodeString(hexString) {
   return Buffer.from(hexString, 'hex');
@@ -18,5 +19,4 @@ const hashBuffer = await crypto.subtle.digest("SHA-256", messageBuffer);
 
 const hash = encodeToString(hashBuffer)
 
-console.log(hash)
-
+assert(hash === "92a74e1c519bf3ee0500b9c1436358059d7f3819e1f738e14f61a907b9265ccd","Invalid hash")
