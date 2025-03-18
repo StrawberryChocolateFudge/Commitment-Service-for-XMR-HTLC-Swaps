@@ -12,7 +12,7 @@ Instead of that, the Commitment Provider is a (decentralizable) third party that
 
 The commitment provider:
 
-1. Never Has access to any funds
+1. Never has access to any funds
 2. Never knows where the commitments and secrets are actually used
 3. Can't be used to steal funds by third party, if the database is hacked.
 4. It's not an escrow and doesn't provide dispute resolution
@@ -21,9 +21,9 @@ The commitment provider:
 
 The commitment provider reveals the pre-image of a commitment to a user that can provide a valid proof of monero transaction. Payment proofs are checked using `check_tx_key TXID TXKEY ADDRESS`
 
-### Flow
+### Example Flow
 
-* Alice wants to exchange her XMR to Solana with Bob.
+* Alice wants to exchange her XMR to Sol with Bob.
 * Alice sends Bob her Sol address and they agree on the exchange rate
 * Bob contacts the Commitment Provider and requests a Commitment, When requesting the commitment Bob configures the commitment provider to reveal the secret of the commitment for a payment proof of X amount made to his address
 * Bob interacts with a smart contract on Solana and deposits the Sol to trade
@@ -35,11 +35,11 @@ The commitment provider reveals the pre-image of a commitment to a user that can
 The explained flow works on every smart contract chain and Solana was just an example.
 
 ### Benefits
-1. Using the Commitment Provider requires no Javascript
-2. The commitment provider offers a simple flow for trading
-3. It's more trustless than an Escrow
-4. Trading is always P2P, Alice transfers directly to Bob
-5. No local app to run for users. No asb needed to swap
+1. The commitment provider offers a simple flow for trading
+2. It's more trustless than an Escrow
+3. Trading is always P2P, Alice transfers directly to Bob, then Bob transfer to Alice via Smart Contract
+4. No local app to run for users. No local cli apps needed to swap
+
 
 ### Considerations
 * The users need to have 2 browser windows open. One to use the commitment provider's interface and one to do a swap with a browser wallet on chain
@@ -102,3 +102,68 @@ The corresponding hash in javascript is
 `const hashBuffer = await crypto.subtle.digest("SHA-256", buff);`
 
 So you can recreate the hash provided by the commitment provider in Javascript easily. This should be compatible with all sha256 hashes provided by on-chain contracts too!
+
+
+## Contract
+Here is an example Hash time lock contract in solidity that would be compatible with this
+
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract HTLC {
+    address payable public sender;
+    address payable public recipient;
+    bytes32 public hashLock;
+    uint256 public timeLock;
+    bool public isClaimed;
+
+    event Funded(uint256 amount);
+    event Claimed(bytes32 secret);
+    event Refunded();
+
+    modifier onlySender() {
+        require(msg.sender == sender, "Not the sender");
+        _;
+    }
+
+    modifier onlyRecipient() {
+        require(msg.sender == recipient, "Not the recipient");
+        _;
+    }
+
+    constructor(
+        address payable _recipient,
+        bytes32 _hashLock,
+        uint256 _timeLock
+    ) payable {
+        sender = payable(msg.sender);
+        recipient = _recipient;
+        hashLock = _hashLock;
+        timeLock = block.timestamp + _timeLock;
+        isClaimed = false;
+
+        require(msg.value > 0, "No funds provided");
+        emit Funded(msg.value);
+    }
+
+    function claim(bytes32 _secret) public onlyRecipient {
+        require(sha256(abi.encodePacked(_secret)) == hashLock, "Invalid secret");
+        require(block.timestamp < timeLock, "Time lock expired");
+        require(!isClaimed, "Already claimed");
+
+        isClaimed = true;
+        recipient.transfer(address(this).balance);
+        emit Claimed(_secret);
+    }
+
+    function refund() public onlySender {
+        require(block.timestamp >= timeLock, "Time lock not expired");
+        require(!isClaimed, "Already claimed");
+
+        sender.transfer(address(this).balance);
+        emit Refunded();
+    }
+}
+
+```
