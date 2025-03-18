@@ -1,4 +1,12 @@
-# Commitment Provider - Swap Infrastructure for Monero Trading
+# Commitment Provider - HTLC support for Monero Trading
+WIP
+Example UIs:
+![current ui](current_ui.png "current ui")
+
+
+Example:
+
+![Get Secret current UI](GetSecret.png "get secret example ui")
 
 The commitment provider aims to tackle a problem with Monero Atomic Swaps, they are difficult to develop.
 
@@ -16,38 +24,42 @@ The commitment provider:
 2. Never knows where the commitments and secrets are actually used
 3. Can't be used to steal funds by third party, if the database is hacked.
 4. It's not an escrow and doesn't provide dispute resolution
-5. It's more similar to an Oracle that observes Monero payments and reveals secrets to specific users.
+5. It's more similar to an Oracle that checks Monero payments and reveals secrets to specific users.
 6. Discards the monero payment proofs after the secret is revealed.
 
 The commitment provider reveals the pre-image of a commitment to a user that can provide a valid proof of monero transaction. Payment proofs are checked using `check_tx_key TXID TXKEY ADDRESS`
 
 ### Example Flow
-
+```
 * Alice wants to exchange her XMR to Sol with Bob.
 * Alice sends Bob her Sol address and they agree on the exchange rate
 * Bob contacts the Commitment Provider and requests a Commitment, When requesting the commitment Bob configures the commitment provider to reveal the secret of the commitment for a payment proof of X amount made to his address
-* Bob interacts with a smart contract on Solana and deposits the Sol to trade
-* The HTLC on Solana unlocks the Sol if the secret is provided by Alice or it refunds it in 1 day back to Bob
+* Bob interacts with a smart contract on Solana and deposits the Sol to trade with the commitment and Alice's address
+* The HTLC on Solana unlocks the Sol if the secret is provided by Alice else it refunds it in 1 day back to Bob
 * Alice makes the XMR deposit to Bobs address
 * Alice then creates a payment proof and uses it to get the secret from the commitment provider 
 * Alice then pulls payments from the Smart contract using the secret
+```
+
 
 The explained flow works on every smart contract chain and Solana was just an example.
 
 ### Benefits
 1. The commitment provider offers a simple flow for trading
-2. It's more trustless than an Escrow
+2. It's more easy to develop for than a Multisig Escrow
 3. Trading is always P2P, Alice transfers directly to Bob, then Bob transfer to Alice via Smart Contract
 4. No local app to run for users. No local cli apps needed to swap
+5. It works in the browser and uses existing monero wallet
 
 
 ### Considerations
 * The users need to have 2 browser windows open. One to use the commitment provider's interface and one to do a swap with a browser wallet on chain
 * It can however be used as a JSON API and embedded into applications/websites or served as an IFRAME
-* It must stay online, else there can be loss of funds due to the HTLC timelock expiration, but secret recovery mechanisms can be implemented
+* It must stay online, else there can be loss of funds due to the HTLC timelock expiration, but secret recovery mechanisms can be implemented in many ways
+* The Commitments can be used to query for the XMR address  (only while the commitment is valid)  The XMR addresses are never stored on smart contract chains this way.
 
 ### Monetizing
-The commitment provider is a paid service that works with a `pay per commitment` model
+The commitment provider is a paid service that works with a `pay per commitment` model. Payments are needed also to stop malicious users from requesting too many commitments.
 
 Example: 
 * Bob deposits XMR to the commitment provider's address
