@@ -13,6 +13,7 @@ var (
 	databaseName = "sqlite-database.db"
 )
 
+// TODO: check if it exists already
 func createDb() {
 	log.Println("Creating " + databaseName)
 	file, err := os.Create(databaseName)
@@ -21,7 +22,6 @@ func createDb() {
 	}
 	file.Close()
 	log.Println(databaseName + " Created")
-
 }
 
 func deleteDb() {
@@ -32,6 +32,8 @@ func initDb() {
 	sqliteDatabase, _ := sql.Open("sqlite3", "./"+databaseName)
 	defer sqliteDatabase.Close()
 
+	//TODO:create the table if not exists
+	//TODO: run the database migrations here
 	createCommitmentTable(sqliteDatabase)
 }
 
@@ -41,6 +43,9 @@ type Commitments struct {
 	Commitment     string
 	Unlock_address string
 	Unlock_amount  float64
+	Is_dollars     bool
+	Hash_func      string
+	Confirmations  int16
 	Valid_from     uint64
 	Valid_till     uint64
 }
@@ -52,8 +57,11 @@ func createCommitmentTable(db *sql.DB) {
 		"commitment" TEXT,
 		"unlock_address" TEXT,
 		"unlock_amount" REAL,
+		"is_dollars" INTEGER,
+		"hash_func" TEXT,
+		"confirmations" INTEGER,
 		"valid_from" INTEGER,
-		"valid_till" INTEGER
+		"valid_till" INTEGER,
 		`
 
 	log.Println("Creating commitment table....")
@@ -74,24 +82,41 @@ func insertCommitment(
 	commitment string,
 	unlock_address string,
 	unlock_amount float64,
+	Is_dollars bool,
+	hash_func string,
+	confirmations int16,
 	valid_from uint64,
 	valid_till uint64,
 ) {
 	log.Println("Inserting commitment record ....")
-	insertCommitmentSQL := `INSERT INTO commitments(
+	insertCommitmentSQL := `INSERT INTO cosmmitments(
 		secret, 
 		commitment, 
 		unlock_address, 
-		unlock_amount, 
+		unlock_amount,
+		is_dollars,
+		confirmations, 
 		valid_from, 
-		valid_till) VALUES (?, ?, ?, ?, ?, ?)`
+		valid_till,
+		hash_func
+		) VALUES (?, ?, ?, ?, ?, ?, ?,?,?)`
 
 	statement, err := db.Prepare(insertCommitmentSQL)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	_, err = statement.Exec(secret, commitment, unlock_address, unlock_amount, valid_from, valid_till)
+	_, err = statement.Exec(
+		secret,
+		commitment,
+		unlock_address,
+		unlock_amount,
+		Is_dollars,
+		confirmations,
+		valid_from,
+		valid_till,
+		hash_func,
+	)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -100,9 +125,16 @@ func insertCommitment(
 func getCommitmentDetails(db *sql.DB, commitment string) (Commitments, error) {
 	var commitments Commitments
 
-	row := db.QueryRow("SELECT unlock_address,unlock_amount,valid_from,valid_till FROM commitments WHERE commitment = ?", commitment)
+	row := db.QueryRow("SELECT unlock_address,unlock_amount,is_dollars, valid_from,valid_till,confirmations, hash_func FROM commitments WHERE commitment = ?", commitment)
 
-	if err := row.Scan(&commitments.Unlock_address, &commitments.Unlock_amount, &commitments.Valid_from, &commitments.Valid_till); err != nil {
+	if err := row.Scan(
+		&commitments.Unlock_address,
+		&commitments.Unlock_amount,
+		&commitments.Is_dollars,
+		&commitments.Valid_from,
+		&commitments.Valid_till,
+		&commitments.Confirmations,
+		&commitments.Hash_func); err != nil {
 
 		if err == sql.ErrNoRows {
 			return commitments, fmt.Errorf("commitment: %x: no such commitment", commitment)
@@ -116,9 +148,9 @@ func getCommitmentDetails(db *sql.DB, commitment string) (Commitments, error) {
 func getSecret(db *sql.DB, commitment string) (Commitments, error) {
 	var commitments Commitments
 
-	row := db.QueryRow("SELECT secret, unlock_address,unlock_amount,valid_from,valid_till FROM commitments WHERE commitment = ?", commitment)
+	row := db.QueryRow("SELECT secret, unlock_address,unlock_amount, is_dollars, valid_from,valid_till FROM commitments WHERE commitment = ?", commitment)
 
-	if err := row.Scan(&commitments.Secret, &commitments.Unlock_address, &commitments.Unlock_amount, &commitments.Valid_from, &commitments.Valid_till); err != nil {
+	if err := row.Scan(&commitments.Secret, &commitments.Unlock_address, &commitments.Unlock_amount, &commitments.Is_dollars, &commitments.Valid_from, &commitments.Valid_till); err != nil {
 
 		if err == sql.ErrNoRows {
 			return commitments, fmt.Errorf("commitment: %x: no such commitment", commitment)
