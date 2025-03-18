@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Commitment Service</title>
+</head>
+
+<body>
+    <div class="flex flex-col justify-center border">
+        <div class="flex flex-row justify-center">
+            <div class="w-full ">
+                <h1
+                    class="mb-4 text-2xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
+                    Commitment Service</h1>
+
+                <h2 class="text-lg font-normal lg:text-xl ">Copy the Commitment and use it. The secret used to create it will be revealed for a valid payment proof!</h2>
+                <hr class="mb-3" />
+
+                <pre class="bg-gray-200">{{.Commitment}}</pre>
+
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

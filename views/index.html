@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>Commitment Provider</title>
+</head>
+
+<body>
+    <div class="flex flex-col justify-center border">
+        <div class="flex flex-row justify-center">
+            <form class="w-full max-w-lg" method="post" action="/">
+                <h1
+                    class="mb-4 text-2xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
+                    Commitment Service</h1>
+
+                <h2 class="text-lg font-normal lg:text-xl ">To request a commitment, enter the Monero Address you expect
+                    payment on, the amount of payment
+                    and the deadline for the payments.</h2>
+                <hr class="mb-3" />
+                <div class="flex flex-wrap -mx-3 mb-6">
+                    <div class="w-full px-3">
+                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                            for="xmr-address">
+                            Monero Address
+                        </label>
+                        <input
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="xmr-address" required type="text" placeholder="0x" name="MoneroAddress">
+                        <p class="text-gray-600 text-xs italic">The XMR address that receives the transaction</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap -mx-3 mb-2">
+                    <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
+                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                            for="xmr-amount" min="0" required>
+                            Payment Amount
+                        </label>
+                        <input
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="xmr-amount" type="number" placeholder="0 XMR" name="XmrAmount">
+                        <p class="text-gray-600 text-xs italic">The amount the address needs to receive to reveal the secret</p>
+                    </div>
+                    <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
+                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                            for="valid-til" required>
+                            Valid Til
+                        </label>
+                        <input
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="valid-til" type="date" placeholder="" name="ValidTil">
+                        <p class="text-gray-600 text-xs italic">The expiry date after which the secret won't be
+                            revealed.</p>
+
+                    </div>
+                    <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
+                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                            for="confirmations" required>
+                            Confirmations
+                        </label>
+                        <input
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="confirmations" type="number" placeholder="" name="Confirmations" value="10">
+                        <p class="text-gray-600 text-xs italic">The amount of confirmations for a valid payment
+                            (defaults to 10)</p>
+                    </div>
+                </div>
+                <div class="flex flex-row justify-center">
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
+                        Request Commitment
+                    </button>
+                </div>
+                <h2 class="text-md font-normal ">The secret behind the commitment will be revealed to anyone who
+                    provides a monero payment proof of transferring the required funds to that address. The service is
+                    valid from commitment creation till the specified expiry date.</h2>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
