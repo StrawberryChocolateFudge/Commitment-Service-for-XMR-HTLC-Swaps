@@ -11,6 +11,32 @@
 </head>
 
 <body>
+    <nav class="bg-blue-700">
+        <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+            <div class="relative flex h-16 items-center justify-between">
+
+                <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+
+                    <div class="">
+                        <div class="flex space-x-4">
+                            <a href="/" class="rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white"
+                                aria-current="page">New Commitment</a>
+                            <a href="/showCommitment"
+                                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Check
+                                Commitment</a>
+                            <a href="/getSecret"
+                                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Get
+                                Secret</a>
+                            <a href="/apikeys"
+                                class="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white">Api
+                                Keys</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="flex flex-col justify-center border">
         <div class="flex flex-row justify-center">
             <form class="w-full max-w-lg" method="post" action="/">
@@ -18,10 +44,24 @@
                     class="mb-4 text-2xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
                     Commitment Service</h1>
 
-                <h2 class="text-lg font-normal lg:text-xl ">To request a commitment, enter the Monero Address you expect
+                <h2 class="text-lg font-normal lg:text-xl ">To request a commitment enter the Monero Address you expect
                     payment on, the amount of payment
-                    and the deadline for the payments.</h2>
+                    and the deadline for the payments. Use this commitment for HashTimeLock contracts when trading.
+                </h2>
                 <hr class="mb-3" />
+                <div class="flex flex-wrap -mx-3 mb-6">
+                    <div class="w-full px-3">
+                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="api-key">
+                            Api Key
+                        </label>
+                        <input
+                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                            id="api-key" required type="text" placeholder="0x" name="ApiKey" value={{if
+                            .ApiKey}}{{.ApiKey}}{{end}}>
+                        <p class="text-gray-600 text-xs italic">You need an API key to request commitments. Create one
+                            on the API Keys page</p>
+                    </div>
+                </div>
                 <div class="flex flex-wrap -mx-3 mb-6">
                     <div class="w-full px-3">
                         <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
@@ -30,7 +70,8 @@
                         </label>
                         <input
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                            id="xmr-address" required type="text" placeholder="0x" name="MoneroAddress">
+                            id="xmr-address" required type="text" placeholder="0x" name="MoneroAddress" value={{if
+                            .MoneroAddress}}{{.MoneroAddress}}{{end}}>
                         <p class="text-gray-600 text-xs italic">The XMR address that receives the transaction</p>
                     </div>
                 </div>
@@ -42,19 +83,50 @@
                         </label>
                         <input
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                            id="xmr-amount" type="number" placeholder="0 XMR" name="XmrAmount">
-                        <p class="text-gray-600 text-xs italic">The amount the address needs to receive to reveal the secret</p>
+                            id="xmr-amount" type="number" placeholder="0" name="XmrAmount" value={{if
+                            .XmrAmount}}{{.XmrAmount}}{{end}}>
+                        <p class="text-gray-600 text-xs italic">The amount the address needs to receive to reveal the
+                            secret. Toggle the switch on to use USD</p>
+                        <div class="inline-flex items-center gap-2">
+                            <label for="currency-switch" class="text-slate-600 text-sm cursor-pointer">XMR</label>
+
+                            <div class="relative inline-block w-11 h-5">
+                                <input {{if .IsDollarsChecked}}{{.IsDollarsChecked}}{{end}} id="currency-switch"
+                                    type="checkbox" name="IsDollars"
+                                    class="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-slate-800 cursor-pointer transition-colors duration-300" />
+                                <label for="currency-switch"
+                                    class="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 cursor-pointer">
+                                </label>
+                            </div>
+
+                            <label for="currency-switch" class="text-slate-600 text-sm cursor-pointer">USD</label>
+                        </div>
                     </div>
                     <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
-                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                            for="valid-til" required>
-                            Valid Til
+                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="Expiry"
+                            required>
+                            Expiry
                         </label>
-                        <input
-                            class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                            id="valid-til" type="date" placeholder="" name="ValidTil">
+
+                        <div class="inline-block relative w-64">
+                            <select name="Expiry" id="Expiry"
+                                class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <option {{if .OneHourSelected}}{{.OneHourSelected}}{{end}} value="1">1 Hour</option>
+                                <option {{if .TwoHoursSelected}}{{.TwoHoursSelected}}{{end}} value="2">2 hours</option>
+                                <option {{if .FourHoursSelected}}{{.FourHoursSelected}}{{end}} value="4">4 Hours
+                                </option>
+                                <option {{if .EightHoursSelected}}{{.EightHoursSelected}}{{end}} value="8">8 Hours
+                                </option>
+                                <option {{if .TwelveHoursSelected}}{{.TwelveHoursSelected}}{{end}} value="12">12 Hours
+                                </option>
+                                <option {{if .TwentyFourHoursSelected}}{{.TwentyFourHoursSelected}}{{end}} value="24">
+                                    24 Hours</option>
+                                <option {{if .FortyEightHoursSelected}}{{.FortyEightHoursSelected}}{{end}} value="48">
+                                    48 Hours</option>
+                            </select>
+                        </div>
                         <p class="text-gray-600 text-xs italic">The expiry date after which the secret won't be
-                            revealed.</p>
+                            revealed anymore. The commitment is valid from the date created</p>
 
                     </div>
                     <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
@@ -64,18 +136,49 @@
                         </label>
                         <input
                             class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                            id="confirmations" type="number" placeholder="" name="Confirmations" value="10">
-                        <p class="text-gray-600 text-xs italic">The amount of confirmations for a valid payment
+                            id="confirmations" type="number" placeholder="" name="Confirmations" value={{if
+                            .Confirmations}}{{.Confirmations}}{{end}}>
+                        <p class="text-gray-600 text-xs italic" value={{.Confirmations}}>The amount of confirmations for
+                            a valid payment
                             (defaults to 10)</p>
                     </div>
                 </div>
+
+                {{if .ErrorOccured}}
+                <div class="mb-3 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong class="font-bold">{{.ErrorTitle}}</strong>
+                    <span class="block sm:inline">{{.ErrorMessage}}</span>
+                </div>
+                {{end}}
+
+                <div class="flex flex-row justify-center mt-2 mb-4">
+                    <div class="inline-flex items-center gap-2">
+                        <label for="switch-component-on" class="text-slate-600 text-sm cursor-pointer">Sha256</label>
+
+                        <div class="relative inline-block w-11 h-5">
+                            <input {{if .IsPoseidonChecked}}{{.IsPoseidonChecked}}{{end}} id="switch-component-on"
+                                type="checkbox" name="IsPoseidon"
+                                class="peer appearance-none w-11 h-5 bg-slate-100 rounded-full checked:bg-slate-800 cursor-pointer transition-colors duration-300" />
+                            <label for="switch-component-on"
+                                class="absolute top-0 left-0 w-5 h-5 bg-white rounded-full border border-slate-300 shadow-sm transition-transform duration-300 peer-checked:translate-x-6 peer-checked:border-slate-800 cursor-pointer">
+                            </label>
+                        </div>
+                        <label for="switch-component-on" class="text-slate-600 text-sm cursor-pointer">Poseidon
+                            Hash (BN254)</label>
+                    </div>
+                </div>
+
+
+
                 <div class="flex flex-row justify-center">
                     <button type="submit"
                         class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
                         Request Commitment
                     </button>
                 </div>
-                <h2 class="text-md font-normal ">The secret behind the commitment will be revealed to anyone who
+
+
+                <h2 class="text-md font-normal italic">The secret behind the commitment will be revealed to anyone who
                     provides a monero payment proof of transferring the required funds to that address. The service is
                     valid from commitment creation till the specified expiry date.</h2>
             </form>
