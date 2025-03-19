@@ -196,25 +196,25 @@ A use-case that comes to mind is Monero Collateralized Loans.
 Let me explain:
 
 
-Alice (borrower) wants to take a USDT load from Bob (lender) with 50% collateral, lets say on Ethereum
+* Alice (borrower) wants to take a USDT load from Bob (lender) with 50% collateral, lets say on Ethereum
 
-Alice gives her Eth address to Bob
+* Alice gives her Eth address to Bob
 
-Bob creates a 2-2 multisig address with a Liquidator service
+* Bob creates a 2-2 multisig address with a Liquidator service
 
-Bob uses the multisig address to create a commitment at the commitment service
+* Bob uses the multisig address to create a commitment at the commitment service
 
-Bob deposits into an ethereum smart contract with Alice's address and the commitment
+* Bob deposits into an ethereum smart contract with Alice's address and the commitment
 
-Now, Alice makes the deposit into the Multisig address, claims the secret and withdraws the loan
+* Now, Alice makes the deposit into the Multisig address, claims the secret and withdraws the loan
 
-The XMR deposit stays in the multisig owned by the Liquidator and Bob. 
+* The XMR deposit stays in the multisig owned by the Liquidator and Bob. 
 
-If the price of XMR falls under a threshold, the liquidator will sign a message to liquidate the XMR and send it to Bob
+* If the price of XMR falls under a threshold, the liquidator will sign a transaction to liquidate the XMR for Bob
 
-If Alice decides to pay back the loan with interest, first she creates a commitment at the commitment service
+* If Alice decides to pay back the loan with interest, first she creates a commitment at the commitment service
 then Alice deposits the payback amount using bob's address and the commitment, they will do a swap back.
 
-Then the liquidator and Bob sign a transaction to transfer the XMR back, to an address fetched from the commitment service.
+* Then the liquidator and Bob sign a transaction to transfer the XMR back, to an address fetched from the commitment service.
 
-When the XMR transaction is done, Bob uses the secret to claim back the money he lent out to Alice.
+* When the XMR transaction is done, Bob uses the secret to claim back the money he lent out to Alice.
