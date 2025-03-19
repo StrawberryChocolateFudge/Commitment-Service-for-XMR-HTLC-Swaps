@@ -187,9 +187,11 @@ contract HTLC {
 
 ## Using multisig wallet as deposit address
 
-The commitment provider doesn't care what address is used for depositing same way it has now knowledge of where the commitment is used.
-If an application developer implements Multisig for depositing, that can create applications where XMR could be refunded also.
-A use-case that comes to mind is Monero Collateral Loans.
+The commitment provider doesn't care what address is used for depositing same way it has no knowledge of where the commitment is used.
+
+If an application developer implements Multisig for depositing, that can create applications where XMR could be refunded conditionally.
+
+A use-case that comes to mind is Monero Collateralized Loans.
 
 Let me explain:
 
