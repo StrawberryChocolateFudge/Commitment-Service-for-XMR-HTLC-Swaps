@@ -31,7 +31,7 @@ The Commitment Service:
 The Commitment Service reveals the pre-image of a commitment to a user that can provide a valid proof of monero transaction. Payment proofs are checked using `check_tx_key TXID TXKEY ADDRESS`
 
 ### Example Flow
-```
+
 * Alice wants to exchange her XMR to Sol with Bob.
 * Alice sends Bob her Sol address and they agree on the exchange rate
 * Bob contacts the Commitment Service and requests a Commitment, When requesting the commitment Bob configures the Commitment Service to reveal the secret of the commitment for a payment proof of X amount made to his address
@@ -40,7 +40,7 @@ The Commitment Service reveals the pre-image of a commitment to a user that can 
 * Alice makes the XMR deposit to Bobs address
 * Alice then creates a payment proof and uses it to get the secret from the Commitment Service 
 * Alice then pulls payments from the Smart contract using the secret
-```
+
 
 
 The explained flow works on every smart contract chain and Solana was just an example.
