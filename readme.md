@@ -184,3 +184,36 @@ contract HTLC {
 }
 
 ```
+
+## Using multisig wallet as deposit address
+
+The commitment provider doesn't care what address is used for depositing same way it has now knowledge of where the commitment is used.
+If an application developer implements Multisig for depositing, that can create applications where XMR could be refunded also.
+A use-case that comes to mind is Monero Collateral Loans.
+
+Let me explain:
+
+```
+Alice (borrower) wants to take a USDT load from Bob (lender) with 50% collateral, lets say on Ethereum
+
+Alice gives her Eth address to Bob
+
+Bob creates a 2-2 multisig address with a Liquidator service
+
+Bob uses the multisig address to create a commitment at the commitment service
+
+Bob deposits into an ethereum smart contract with Alice's address and the commitment
+
+Now, Alice makes the deposit into the Multisig address, claims the secret and withdraws the loan
+
+The XMR deposit stays in the multisig owned by the Liquidator and Bob. 
+
+If the price of XMR falls under a threshold, the liquidator will sign a message to liquidate the XMR and send it to Bob
+
+If Alice decides to pay back the loan with interest, first she creates a commitment at the commitment service
+Alice deposits the payback amount using bob's address and the commitment, they will do a swap back.
+
+Then the liquidator and Bob sign a transaction to transfer the XMR back, to an address provided by the commitment service.
+
+When the XMR transaction is done, Bob uses the secret to claim back the money he lent out to Alice.
+```
