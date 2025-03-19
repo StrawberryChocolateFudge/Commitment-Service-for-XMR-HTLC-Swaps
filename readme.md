@@ -1,6 +1,7 @@
 # Commitment Service - HTLC support for Monero Trading
 WIP
 Example UIs:
+
 ![current ui](current_ui.png "current ui")
 
 
@@ -54,12 +55,12 @@ The explained flow works on every smart contract chain and Solana was just an ex
 
 ### Considerations
 * The users need to have 2 browser windows open. One to use the Commitment Service's interface and one to do a swap with a browser wallet on chain
-* It can however be used as a JSON API and embedded into applications/websites or served as an IFRAME
-* It must stay online, else there can be loss of funds due to the HTLC timelock expiration, but secret recovery mechanisms can be implemented in many ways
-* The Commitments can be used to query for the XMR address  (only while the commitment is valid)  The XMR addresses are never stored on smart contract chains this way.
+* It can however be used as a JSON API and embedded into applications/websites or served in an IFRAME
+* It must stay online, else there can be loss of funds due to the HTLC timelock expiration, the biggest challenge for security is DDOS mitigation
+* The Commitments can be used to query for the XMR address (only while the commitment is valid) so  the XMR addresses never need to be stored on smart contract chains this way
 
 ### Monetizing
-The Commitment Service is a paid service that works with a `pay per commitment` model. Payments are needed also to stop malicious users from requesting too many commitments.
+The Commitment Service is a paid service that works with a `pay per commitment` model. Api billing is needed also to stop malicious users from requesting too many commitments.
 
 Example: 
 * Bob deposits XMR to the Commitment Service's address
@@ -70,7 +71,7 @@ Example:
 
 
 ### Decentralization
-The Commitment Service infrastructure can be decentralized, however instead of building a complex network to create it, a simpler approach should be used, it should work as a DAO.
+The Commitment Service infrastructure can be decentralized, however instead of building a complex network to decentralize it, a simpler approach should be used, it should work as a manual DAO.
 
 * N amount of people can become Commitment Services
 * They create an N of M multisig account via Monero CLI and communicate via chat
@@ -81,7 +82,7 @@ The Commitment Service infrastructure can be decentralized, however instead of b
 
 This would allow for a simple decentralization where humans are representing each instance and large networks of nodes don't exist. Having 4-5 providers are more than enough.
 
-It would be also possible to implement decentralized storage for secrets via threshold homomorphic encryption which is up for research (golang latigo library can work for this, but I don't want to over complicate things)
+It would be also possible to implement decentralized sharing schemes for secrets via threshold homomorphic encryption which is up for research (golang latigo library can work for this, but I don't want to over complicate things)
 
 ## API
 
@@ -93,6 +94,8 @@ The API serves HTML without Javascript and there is a JSON API
 ## How commitments are computed
 
 The commitment is a sha256 hash of a 32 byte secret buffer.
+Poseidon hash is also available for ZKP.
+
 The commitment and the secret can be converted string from to a buffer using using Javascript with this:
 
 ```
@@ -107,16 +110,18 @@ function encodeToString(byteArray) {
 
 ```
 
-Following this will make sure you stay consistent with the Go implementation which uses `hex.EncodeToString` and `hex.DecodeString` and `sha256.Sum256`
+Following this will make sure you stay consistent with the Go implementation which uses `hex.EncodeToString` and `hex.DecodeString` and `sha256.Sum256` and `go-iden3-crypto` `poseidon`
 
-The corresponding hash in javascript is
+The corresponding hash for the sha256 in javascript is:
 
 `const hashBuffer = await crypto.subtle.digest("SHA-256", buff);`
 
 So you can recreate the hash provided by the Commitment Service in Javascript easily. This should be compatible with all sha256 hashes provided by on-chain contracts too!
 
+For using the poseidon hash, you can use circomlibjs poseidon hash and validate it inside a circom circuit for zkp
 
-## Contract
+
+## Example Contract to use with the service
 Here is an example Hash time lock contract in solidity that would be compatible with this
 
 ```
