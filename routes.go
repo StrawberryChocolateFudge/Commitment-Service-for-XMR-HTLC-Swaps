@@ -41,6 +41,9 @@ func router() {
 	//These Apis return HTML
 	app.Get("/", requestCommitment)
 	app.Post("/", processCommitmentRequest)
+
+	app.Get("/checkCommitment", getCheckCommitmentPage)
+
 	//TODO: I need a page to request commitment info where the XMR address is visible and the expiry and the amount!
 	app.Get("/getSecret", requestSecret)
 	app.Post("/getSecret", processSecretRequest)
@@ -79,7 +82,42 @@ func requestCommitment(c *fiber.Ctx) error {
 		"ErrorTitle":              "",
 		"ErrorMessage":            "",
 		"IsPoseidonChecked":       false,
+		"ViewKey":                 "",
 	})
+}
+
+func GetCommitmentRequestError(reqbody *CommitmentRequest, errorMessage string) *fiber.Map {
+
+	isPoseidonChecked := ""
+	isDollars := ""
+
+	if reqbody.IsPoseidon {
+		isPoseidonChecked = "checked"
+	}
+
+	if reqbody.IsDollars {
+		isDollars = "checked"
+	}
+
+	return &fiber.Map{
+		"ApiKey":                  reqbody.ApiKey,
+		"MoneroAddress":           reqbody.MoneroAddress,
+		"XmrAmount":               reqbody.XmrAmount,
+		"IsDollarsChecked":        isDollars,
+		"OneHourSelected":         GetHoursSelected(reqbody.Expiry, 1),
+		"TwoHoursSelected":        GetHoursSelected(reqbody.Expiry, 2),
+		"FourHoursSelected":       GetHoursSelected(reqbody.Expiry, 4),
+		"EightHoursSelected":      GetHoursSelected(reqbody.Expiry, 8),
+		"TwelveHoursSelected":     GetHoursSelected(reqbody.Expiry, 12),
+		"TwentyFourHoursSelected": GetHoursSelected(reqbody.Expiry, 24),
+		"FortyEightHoursSelected": GetHoursSelected(reqbody.Expiry, 48),
+		"Confirmations":           reqbody.Confirmations,
+		"ErrorOccured":            true,
+		"ErrorTitle":              "Error",
+		"ErrorMessage":            errorMessage,
+		"IsPoseidonChecked":       isPoseidonChecked,
+		"ViewKey":                 reqbody.ViewKey,
+	}
 }
 
 type CommitmentRequest struct {
@@ -90,6 +128,7 @@ type CommitmentRequest struct {
 	Expiry        uint8   `form:"Expiry"`
 	Confirmations uint64  `form:"Confirmations"`
 	IsPoseidon    bool    `form:"IsPoseidon"`
+	ViewKey       string  `form:"ViewKey"`
 }
 
 func processCommitmentRequest(c *fiber.Ctx) error {
@@ -98,24 +137,16 @@ func processCommitmentRequest(c *fiber.Ctx) error {
 	reqbody := new(CommitmentRequest)
 
 	if err := c.BodyParser(reqbody); err != nil {
-		return c.Render("views/index", fiber.Map{
-			"ApiKey":                  "",
-			"MoneroAddress":           "",
-			"XmrAmount":               "0",
-			"IsDollarsChecked":        "",
-			"OneHourSelected":         "",
-			"TwoHoursSelected":        "",
-			"FourHoursSelected":       "selected",
-			"EightHoursSelected":      "",
-			"TwelveHoursSelected":     "",
-			"TwentyFourHoursSelected": "",
-			"FortyEightHoursSelected": "",
-			"Confirmations":           "10",
-			"ErrorOccured":            true,
-			"ErrorTitle":              "Error",
-			"ErrorMessage":            "An error occurred while parsing the request",
-			"IsPoseidonChecked":       false,
-		})
+
+		reqbody.XmrAmount = 0
+		reqbody.Confirmations = 10
+		reqbody.Expiry = 4
+		reqbody.IsPoseidon = false
+		reqbody.ApiKey = ""
+		reqbody.MoneroAddress = ""
+		reqbody.IsDollars = false
+		reqbody.ViewKey = ""
+		return c.Render("views/index", GetCommitmentRequestError(reqbody, "An error occured while parsing the request"))
 	}
 
 	var hashfunc string
@@ -139,47 +170,11 @@ func processCommitmentRequest(c *fiber.Ctx) error {
 			fmt.Printf("Address verification err %v", err)
 		}
 
-		return c.Render("views/index", fiber.Map{
-			"ApiKey":                  reqbody.ApiKey,
-			"MoneroAddress":           reqbody.MoneroAddress,
-			"XmrAmount":               reqbody.XmrAmount,
-			"IsDollarsChecked":        reqbody.IsDollars,
-			"OneHourSelected":         GetHoursSelected(reqbody.Expiry, 1),
-			"TwoHoursSelected":        GetHoursSelected(reqbody.Expiry, 2),
-			"FourHoursSelected":       GetHoursSelected(reqbody.Expiry, 4),
-			"EightHoursSelected":      GetHoursSelected(reqbody.Expiry, 8),
-			"TwelveHoursSelected":     GetHoursSelected(reqbody.Expiry, 12),
-			"TwentyFourHoursSelected": GetHoursSelected(reqbody.Expiry, 24),
-			"FortyEightHoursSelected": GetHoursSelected(reqbody.Expiry, 48),
-			"Confirmations":           reqbody.Confirmations,
-			"ErrorOccured":            true,
-			"ErrorTitle":              "Error",
-			"ErrorMessage":            "Unable to verify Monero Address",
-			"IsPoseidonChecked":       reqbody.IsPoseidon,
-		})
-
+		return c.Render("views/index", GetCommitmentRequestError(reqbody, "Unable to verify Monero Address"))
 	}
 
 	if reqbody.XmrAmount <= 0 {
-		return c.Render("views/index", fiber.Map{
-			"ApiKey":                  reqbody.ApiKey,
-			"MoneroAddress":           reqbody.MoneroAddress,
-			"XmrAmount":               reqbody.XmrAmount,
-			"IsDollarsChecked":        reqbody.IsDollars,
-			"OneHourSelected":         GetHoursSelected(reqbody.Expiry, 1),
-			"TwoHoursSelected":        GetHoursSelected(reqbody.Expiry, 2),
-			"FourHoursSelected":       GetHoursSelected(reqbody.Expiry, 4),
-			"EightHoursSelected":      GetHoursSelected(reqbody.Expiry, 8),
-			"TwelveHoursSelected":     GetHoursSelected(reqbody.Expiry, 12),
-			"TwentyFourHoursSelected": GetHoursSelected(reqbody.Expiry, 24),
-			"FortyEightHoursSelected": GetHoursSelected(reqbody.Expiry, 48),
-			"Confirmations":           reqbody.Confirmations,
-			"ErrorOccured":            true,
-			"ErrorTitle":              "Error",
-			"ErrorMessage":            "Invalid XMR amount entered",
-			"IsPoseidonChecked":       reqbody.IsPoseidon,
-		})
-
+		return c.Render("views/index", GetCommitmentRequestError(reqbody, "Invalid XMR amount entered"))
 	}
 
 	return c.Render("views/ShowCommitment", fiber.Map{
@@ -193,6 +188,10 @@ func GetHoursSelected(Expiry uint8, selectFor uint8) string {
 	} else {
 		return ""
 	}
+}
+
+func getCheckCommitmentPage(c *fiber.Ctx) error {
+	return c.Render("views/checkCommitment", fiber.Map{})
 }
 
 func requestSecret(c *fiber.Ctx) error {
