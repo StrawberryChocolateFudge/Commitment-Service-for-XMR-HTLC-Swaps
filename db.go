@@ -43,6 +43,7 @@ type Commitments struct {
 	Commitment     string
 	Unlock_address string
 	Unlock_amount  float64
+	View_key       string
 	Is_dollars     bool
 	Hash_func      string
 	Confirmations  int16
@@ -57,6 +58,7 @@ func createCommitmentTable(db *sql.DB) {
 		"commitment" TEXT,
 		"unlock_address" TEXT,
 		"unlock_amount" REAL,
+		"view_key: TEXT,
 		"is_dollars" INTEGER,
 		"hash_func" TEXT,
 		"confirmations" INTEGER,
@@ -82,6 +84,7 @@ func insertCommitment(
 	commitment string,
 	unlock_address string,
 	unlock_amount float64,
+	view_key string,
 	Is_dollars bool,
 	hash_func string,
 	confirmations int16,
@@ -89,17 +92,18 @@ func insertCommitment(
 	valid_till uint64,
 ) {
 	log.Println("Inserting commitment record ....")
-	insertCommitmentSQL := `INSERT INTO cosmmitments(
+	insertCommitmentSQL := `INSERT INTO commitments(
 		secret, 
 		commitment, 
 		unlock_address, 
 		unlock_amount,
+		view_key,
 		is_dollars,
 		confirmations, 
 		valid_from, 
 		valid_till,
 		hash_func
-		) VALUES (?, ?, ?, ?, ?, ?, ?,?,?)`
+		) VALUES (?, ?, ?, ?, ?, ?, ?,?,?,?)`
 
 	statement, err := db.Prepare(insertCommitmentSQL)
 	if err != nil {
@@ -111,6 +115,7 @@ func insertCommitment(
 		commitment,
 		unlock_address,
 		unlock_amount,
+		view_key,
 		Is_dollars,
 		confirmations,
 		valid_from,
@@ -125,11 +130,12 @@ func insertCommitment(
 func getCommitmentDetails(db *sql.DB, commitment string) (Commitments, error) {
 	var commitments Commitments
 
-	row := db.QueryRow("SELECT unlock_address,unlock_amount,is_dollars, valid_from,valid_till,confirmations, hash_func FROM commitments WHERE commitment = ?", commitment)
+	row := db.QueryRow("SELECT unlock_address,unlock_amount,view_key,is_dollars, valid_from,valid_till,confirmations, hash_func FROM commitments WHERE commitment = ?", commitment)
 
 	if err := row.Scan(
 		&commitments.Unlock_address,
 		&commitments.Unlock_amount,
+		&commitments.View_key,
 		&commitments.Is_dollars,
 		&commitments.Valid_from,
 		&commitments.Valid_till,
