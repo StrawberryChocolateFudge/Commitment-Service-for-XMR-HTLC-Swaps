@@ -59,6 +59,7 @@ The explained flow works on every smart contract chain and Solana was just an ex
 * It must stay online, else there can be loss of funds due to the HTLC timelock expiration, the biggest challenge for security is DDOS mitigation
 * The Commitments can be used to query for the XMR address (only while the commitment is valid) so  the XMR addresses never need to be stored on smart contract chains this way
 
+
 ### Monetizing
 The Commitment Service is a paid service that works with a `pay per commitment` model. Api billing is needed also to stop malicious users from requesting too many commitments.
 
@@ -82,7 +83,7 @@ The Commitment Service infrastructure can be decentralized, however instead of b
 
 This would allow for a simple decentralization where humans are representing each instance and large networks of nodes don't exist. Having 4-5 providers are more than enough.
 
-It would be also possible to implement decentralized sharing schemes for secrets via threshold homomorphic encryption which is up for research (golang latigo library can work for this, but I don't want to over complicate things)
+Another way to decentralize the an application using the Commitment service is to use multi hashlock contracts for the HTLC, A multi hash lock contract would need N out of M hash preimages, instead of a single one, and that means multiple commitment services would need to provide a secret instead of a single one and the reliance on a single service goes away, hence decentralization. 
 
 ## API
 
