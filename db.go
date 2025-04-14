@@ -38,17 +38,17 @@ func initDb() {
 }
 
 type Commitments struct {
-	ID             int64
-	Secret         string
-	Commitment     string
-	Unlock_address string
-	Unlock_amount  float64
-	View_key       string
-	Is_dollars     bool
-	Hash_func      string
-	Confirmations  int16
-	Valid_from     uint64
-	Valid_till     uint64
+	ID              int64
+	Secret          string
+	Commitment      string
+	Primary_address string
+	Unlock_amount   float64
+	View_key        string
+	Is_dollars      bool
+	Hash_func       string
+	Confirmations   int16
+	Valid_from      uint64
+	Valid_till      uint64
 }
 
 func createCommitmentTable(db *sql.DB) {
@@ -56,7 +56,7 @@ func createCommitmentTable(db *sql.DB) {
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		"secret" TEXT,
 		"commitment" TEXT,
-		"unlock_address" TEXT,
+		"primary_address" TEXT,
 		"unlock_amount" REAL,
 		"view_key: TEXT,
 		"is_dollars" INTEGER,
@@ -82,7 +82,7 @@ func insertCommitment(
 	db *sql.DB,
 	secret string,
 	commitment string,
-	unlock_address string,
+	primary_address string,
 	unlock_amount float64,
 	view_key string,
 	Is_dollars bool,
@@ -95,7 +95,7 @@ func insertCommitment(
 	insertCommitmentSQL := `INSERT INTO commitments(
 		secret, 
 		commitment, 
-		unlock_address, 
+		primary_address, 
 		unlock_amount,
 		view_key,
 		is_dollars,
@@ -113,7 +113,7 @@ func insertCommitment(
 	_, err = statement.Exec(
 		secret,
 		commitment,
-		unlock_address,
+		primary_address,
 		unlock_amount,
 		view_key,
 		Is_dollars,
@@ -130,10 +130,10 @@ func insertCommitment(
 func getCommitmentDetails(db *sql.DB, commitment string) (Commitments, error) {
 	var commitments Commitments
 
-	row := db.QueryRow("SELECT unlock_address,unlock_amount,view_key,is_dollars, valid_from,valid_till,confirmations, hash_func FROM commitments WHERE commitment = ?", commitment)
+	row := db.QueryRow("SELECT primary_address,unlock_amount,view_key,is_dollars, valid_from,valid_till,confirmations, hash_func FROM commitments WHERE commitment = ?", commitment)
 
 	if err := row.Scan(
-		&commitments.Unlock_address,
+		&commitments.Primary_address,
 		&commitments.Unlock_amount,
 		&commitments.View_key,
 		&commitments.Is_dollars,
@@ -154,9 +154,9 @@ func getCommitmentDetails(db *sql.DB, commitment string) (Commitments, error) {
 func getSecret(db *sql.DB, commitment string) (Commitments, error) {
 	var commitments Commitments
 
-	row := db.QueryRow("SELECT secret, unlock_address,unlock_amount, is_dollars, valid_from,valid_till FROM commitments WHERE commitment = ?", commitment)
+	row := db.QueryRow("SELECT secret, primary_address,unlock_amount, is_dollars, valid_from,valid_till FROM commitments WHERE commitment = ?", commitment)
 
-	if err := row.Scan(&commitments.Secret, &commitments.Unlock_address, &commitments.Unlock_amount, &commitments.Is_dollars, &commitments.Valid_from, &commitments.Valid_till); err != nil {
+	if err := row.Scan(&commitments.Secret, &commitments.Primary_address, &commitments.Unlock_amount, &commitments.Is_dollars, &commitments.Valid_from, &commitments.Valid_till); err != nil {
 
 		if err == sql.ErrNoRows {
 			return commitments, fmt.Errorf("commitment: %x: no such commitment", commitment)
@@ -166,3 +166,26 @@ func getSecret(db *sql.DB, commitment string) (Commitments, error) {
 
 	return commitments, nil
 }
+
+func createWalletRpcTable(db *sql.DB) {
+	createWalletRpcTableSQL := `CREATE TABLE wallet_rpc_containers(
+		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		"container" TEXT,
+		"is_active" : INTEGER,
+		"primary_address" TEXT,
+		"view_key: TEXT,
+		"port": INTEGER,
+		"name": TEXT
+		`
+
+	log.Println("Creating WalletRpc table....")
+	statement, err := db.Prepare(createWalletRpcTableSQL)
+	if err != nil {
+		log.Fatal((err.Error()))
+	}
+	statement.Exec()
+	log.Println("WalletRpc table created")
+}
+
+//TODO: select an active Container by primary key and is_active
+//TODO: Need to create a list of ports and unused ports
